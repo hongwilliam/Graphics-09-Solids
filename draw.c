@@ -35,18 +35,17 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
       bottom = i + 2; }
   }
 
-  else{
-    if (points->m[1][i + 2] <= points->m[1][i + 1] && points->m[1][i] <= points->m[1][i+1]){
+  else if (points->m[1][i] <= points->m[1][i + 1] && points->m[1][i + 2] <= points->m[1][i + 1]){
       top = i + 1;
 
-      if points->m[1][i] < points->m[1][i + 2]) {
+      if (points->m[1][i] < points->m[1][i + 2]) {
         middle = i + 2;
         bottom = i; }
 
       else{
         middle = i;
         bottom = i + 2; }
-     }
+  }
 
     else{
       top = i + 2;
@@ -59,14 +58,14 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
         middle = i;
         bottom = i + 1; }
 
-      }
+    }
 
   double y, x0, x1, Dx0, Dx1;
   y = points->m[1][bottom];
   x0 = points->m[0][bottom];
   x1 = x0;
-  Dx0 = (points->m[0][top] - points->m[0][bottom])/(points->m[1][top] - points->m[1][bottom]);
-  Dx1 = (points->m[0][middle] - points->m[0][bottom])/(points->m[1][middle] - points->m[1][bottom]);
+  Dx0 = (points->m[0][top] - points->m[0][bottom]) / (points->m[1][top] - points->m[1][bottom]);
+  Dx1 = (points->m[0][middle] - points->m[0][bottom]) / (points->m[1][middle] - points->m[1][bottom]);
 
   while (y < points->m[1][top]){
     if (points->m[1][middle] <= y){
@@ -75,8 +74,7 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
     y++;
     x0 += Dx0;
     x1 += Dx1;
-  }    
-}
+  }
 }
 
 /*======== void add_polygon() ==========
