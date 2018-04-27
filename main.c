@@ -20,7 +20,8 @@ int main(int argc, char **argv) {
   edges = new_matrix(4, 4);
   transform = new_matrix(4, 4);
   polygons = new_matrix(4, 4);
-
+  clear_zbuffer(zb);
+  
   if ( argc == 2 )
     parse_file( argv[1], transform, edges, polygons, s, zb);
   else
@@ -29,5 +30,4 @@ int main(int argc, char **argv) {
   free_matrix( edges );
   free_matrix( transform );
   free_matrix( polygons );
-
 }

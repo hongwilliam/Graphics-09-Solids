@@ -1,7 +1,6 @@
 /*====================== display.c ========================
 Contains functions for basic manipulation of a screen
 represented as a 2 dimensional array of colors.
-
 A color is an ordered triple of ints, with each value standing
 for red, green and blue respectively
 ==================================================*/
@@ -31,8 +30,12 @@ pixel 0, 0 located at the lower left corner of the screen
 ====================*/
 void plot(screen s, zbuffer zb, color c, int x, int y, double z) {
   int newy = YRES - 1 - y;
-  if ( x >= 0 && x < XRES && newy >=0 && newy < YRES )
-    s[x][newy] = c;
+  if ( x >= 0 && x < XRES && newy >=0 && newy < YRES ){
+    if (zb[x][newy] < z){
+      s[x][newy] = c;
+      zb[x][newy] = z;
+    }
+  }
 }
 
 /*======== void clear_screen() ==========

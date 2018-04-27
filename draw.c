@@ -19,11 +19,30 @@
   ====================*/
 void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
   color c;
-  c.red = (12 * i) + 12;
-  c.green = (18 * i) + 18;
-  c.blue = (24 * i) + 87;
+  c.red = (12 * i) % 87;
+  c.green = (18 * i) % 87;
+  c.blue = (24 * i) % 87;
 
-  int top, middle, bottom;
+  int top = i, middle = i + 1, bottom = i + 2;
+  int temp;
+
+  if (points->m[1][top] < points->m[1][bottom]){
+    temp = top;
+    top = bottom;
+    bottom = temp; }
+
+  if (points->m[1][top] < points->m[1][middle]){
+    temp = top;
+    top = middle;
+    middle = temp; }
+
+  if (points->m[1][middle] < points->m[1][bottom]){
+    temp = bottom;
+    bottom = middle;
+    middle = temp; }
+
+
+  /**
   if (points->m[1][i + 1] <= points->m[1][i] && points->m[1][i + 2] <= points->m[1][i]){
     top = i;
 
@@ -58,10 +77,49 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
         middle = i;
         bottom = i + 1; }
 
-    }
+    } */
 
-  double y, x0, x1, Dx0, Dx1;
-  y = points->m[1][bottom];
+  double x0, x1, Dx0, Dx1, yTop, yMid, yBottom;
+
+  yTop = points->m[1][top];
+  yMid = points->m[1][middle];
+  yBottom = points->m[1][bottom];
+  int y = yBottom;
+  Dx0 = (points->m[0][top] - points->m[0][bottom]) / (yTop - yBottom);
+  Dx1 = (points->m[0][middle] - points->m[0][bottom]) / (yMid - yBottom);
+  x0 = points->m[0][bottom];
+  x1 = x0;
+
+  double z0, z1, Dz0, Dz1;
+  z0 = points->m[2][bottom];
+  Dz0 = (points->m[2][top] - points->m[2][bottom]) / (yTop - yBottom);
+  Dz1 = (points->m[2][middle] - points->m[2][bottom]) / (yMid - yBottom);
+  z1 = z0;
+
+  while (y < yMid){
+    draw_line(x0, y, z0, x1, y, z1, s, zb, c);
+    x0 += Dx0;
+    x1 += Dx1;
+    z0 += Dz0;
+    z1 += Dz1;
+    y += 1;
+  }
+
+  Dx1 = (points->m[0][top] - points->m[0][middle]) / (yTop - yMid);
+  x1 = points->m[0][middle];
+  Dz1 = (points->m[2][top] - points->m[2][middle])/(yTop - yMid);
+  z1 = points->m[2][middle];
+
+  while (y < yTop){
+    draw_line(x0, y, z0, x1, y, z1, s, zb, c);
+    x0 += Dx0;
+    x1 += Dx1;
+    z0 += Dz0;
+    z1 += Dz1;
+    y += 1;
+  }
+  /**
+  int y = points->m[1][bottom];
   x0 = points->m[0][bottom];
   x1 = x0;
   Dx0 = (points->m[0][top] - points->m[0][bottom]) / (points->m[1][top] - points->m[1][bottom]);
@@ -74,7 +132,8 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
     y++;
     x0 += Dx0;
     x1 += Dx1;
-  }
+  } */
+
 }
 
 /*======== void add_polygon() ==========
@@ -121,33 +180,12 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb, color c ) {
   int point;
   double *normal;
 
-  for (point=0; point < polygons->lastcol-2; point+=3) {
+  for (point = 0; point < polygons->lastcol - 2; point += 3) {
 
     normal = calculate_normal(polygons, point);
 
     if ( normal[2] > 0 ) {
-
-      draw_line( polygons->m[0][point],
-                 polygons->m[1][point],
-                 polygons->m[2][point],
-                 polygons->m[0][point+1],
-                 polygons->m[1][point+1],
-                 polygons->m[2][point+1],
-                 s, zb, c);
-      draw_line( polygons->m[0][point+2],
-                 polygons->m[1][point+2],
-                 polygons->m[2][point+2],
-                 polygons->m[0][point+1],
-                 polygons->m[1][point+1],
-                 polygons->m[2][point+1],
-                 s, zb, c);
-      draw_line( polygons->m[0][point],
-                 polygons->m[1][point],
-                 polygons->m[2][point],
-                 polygons->m[0][point+2],
-                 polygons->m[1][point+2],
-                 polygons->m[2][point+2],
-                 s, zb, c);
+      scanline_convert(polygons, point, s , zb);
     }
   }
 }
