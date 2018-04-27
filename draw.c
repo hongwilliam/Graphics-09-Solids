@@ -19,9 +19,9 @@
   ====================*/
 void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
   color c;
-  c.red = (12 * i) % 87;
+  c.red = (12 * i) % 42;
   c.green = (18 * i) % 87;
-  c.blue = (24 * i) % 87;
+  c.blue = (24 * i) % 56;
 
   int top = i, middle = i + 1, bottom = i + 2;
   int temp;
@@ -79,43 +79,45 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
 
     } */
 
-  double x0, x1, Dx0, Dx1, yTop, yMid, yBottom;
+  double x0, x1, Dbm, Dbt, Dmt, yTop, yMid, yBottom, y;
 
   yTop = points->m[1][top];
   yMid = points->m[1][middle];
   yBottom = points->m[1][bottom];
-  int y = yBottom;
-  Dx0 = (points->m[0][top] - points->m[0][bottom]) / (yTop - yBottom);
-  Dx1 = (points->m[0][middle] - points->m[0][bottom]) / (yMid - yBottom);
+
+  Dbm = (points->m[0][middle] - points->m[0][bottom]) / (yMid - yBottom);
+  Dbt = (points->m[0][top] - points->m[0][bottom]) / (yTop - yBottom);
+  Dmt = (points->m[0][top] - points->m[0][middle]) / (yTop - yMid);
   x0 = points->m[0][bottom];
   x1 = x0;
 
-  double z0, z1, Dz0, Dz1;
+  double z0, z1, DZbm, DZbt, DZmt;
+  DZbm = (points->m[2][middle] - points->m[2][bottom]) / (yMid - yBottom);
+  DZbt = (points->m[2][top] - points->m[2][bottom]) / (yTop - yBottom);
+  DZmt = (points->m[2][top] - points->m[2][middle])/ (yTop - yMid);
   z0 = points->m[2][bottom];
-  Dz0 = (points->m[2][top] - points->m[2][bottom]) / (yTop - yBottom);
-  Dz1 = (points->m[2][middle] - points->m[2][bottom]) / (yMid - yBottom);
   z1 = z0;
 
+  y = yBottom;
   while (y < yMid){
     draw_line(x0, y, z0, x1, y, z1, s, zb, c);
-    x0 += Dx0;
-    x1 += Dx1;
-    z0 += Dz0;
-    z1 += Dz1;
+    x0 += Dbt;
+    x1 += Dbm;
+    z0 += DZbt;
+    z1 += DZbm;
     y += 1;
   }
 
-  Dx1 = (points->m[0][top] - points->m[0][middle]) / (yTop - yMid);
   x1 = points->m[0][middle];
-  Dz1 = (points->m[2][top] - points->m[2][middle])/(yTop - yMid);
   z1 = points->m[2][middle];
 
+  y = yMid;
   while (y < yTop){
     draw_line(x0, y, z0, x1, y, z1, s, zb, c);
-    x0 += Dx0;
-    x1 += Dx1;
-    z0 += Dz0;
-    z1 += Dz1;
+    x0 += Dbt;
+    x1 += Dmt;
+    z0 += DZbt;
+    z1 += DZmt;
     y += 1;
   }
   /**
